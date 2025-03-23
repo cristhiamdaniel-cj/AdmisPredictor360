@@ -1,0 +1,14 @@
+# Archivos sensibles
+.env
+
+# Configuración del editor
+.vscode/
+*.swp
+
+# Binarios generados
+*.bin
+pipeline
+
+# Carpetas de compilación o generadas
+build/
+target/
