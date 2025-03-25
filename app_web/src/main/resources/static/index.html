@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Predictor de Admisión</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f3f3f3;
+    }
+
+    .form-container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, label, button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-shadow: 2px 2px 4px #000;
+      font-size: 40px;
+      font-weight: bold;
+      z-index: 999;
+      flex-direction: column;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h2>Predictor de Admisión PUJ</h2>
+  <form id="predictionForm">
+    <label for="greScore">GRE Score:</label>
+    <input type="number" id="greScore" name="greScore" required>
+
+    <label for="toeflScore">TOEFL Score:</label>
+    <input type="number" id="toeflScore" name="toeflScore" required>
+
+    <label for="universityRating">University Rating:</label>
+    <input type="number" id="universityRating" name="universityRating" required>
+
+    <label for="sop">SOP:</label>
+    <input type="number" step="0.1" id="sop" name="sop" required>
+
+    <label for="lor">LOR:</label>
+    <input type="number" step="0.1" id="lor" name="lor" required>
+
+    <label for="cgpa">CGPA:</label>
+    <input type="number" step="0.1" id="cgpa" name="cgpa" required>
+
+    <label for="research">Research (1 = Sí, 0 = No):</label>
+    <input type="number" id="research" name="research" required>
+
+    <button type="submit">Predecir</button>
+  </form>
+
+  <div id="result"></div>
+</div>
+
+<div id="overlay" class="overlay">
+  <div id="dragonMessage"></div>
+</div>
+
+<script>
+  document.getElementById('predictionForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const formData = {
+      greScore: parseInt(document.getElementById('greScore').value),
+      toeflScore: parseInt(document.getElementById('toeflScore').value),
+      universityRating: parseInt(document.getElementById('universityRating').value),
+      sop: parseFloat(document.getElementById('sop').value),
+      lor: parseFloat(document.getElementById('lor').value),
+      cgpa: parseFloat(document.getElementById('cgpa').value),
+      research: parseInt(document.getElementById('research').value)
+    };
+
+    fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      const chance = (data.chance * 100).toFixed(2);
+      document.getElementById('result').textContent = `Probabilidad de admisión: ${chance}%`;
+
+      const overlay = document.getElementById('overlay');
+      const message = document.getElementById('dragonMessage');
+
+      if (chance >= 80) {
+        overlay.style.backgroundImage = "url('img/happy.png')";
+        message.textContent = "¡Estás más allá del poder de un Super Saiyajin!";
+      } else {
+        overlay.style.backgroundImage = "url('img/sad.png')";
+        message.textContent = "¡Tu ki es bajo! Necesitas entrenar más con el maestro Roshi...";
+      }
+
+      overlay.classList.add('show');
+
+      // Cerrar al hacer clic
+      overlay.onclick = () => {
+        overlay.classList.remove('show');
+      };
+    })
+    .catch(error => {
+      document.getElementById('result').textContent = "Error en la predicción.";
+      console.error("Error:", error);
+    });
+  });
+</script>
+
+</body>
+</html>

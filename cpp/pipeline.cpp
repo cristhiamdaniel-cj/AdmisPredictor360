@@ -21,7 +21,7 @@ void waitForEnter(const string& prompt = "Presione Enter para continuar...") {
 
 int main() {
     cout << "==== Proceso ETL Iniciado ====" << endl;
-    
+
     // Paso 1: Conexión y extracción
     auto t1 = high_resolution_clock::now();
     loadEnv(".env");
@@ -42,7 +42,7 @@ int main() {
     double extractionTime = duration_cast<duration<double>>(t2 - t1).count();
     cout << "Extracción completada en " << extractionTime << " segundos." << endl;
     waitForEnter();
-    
+
     // Paso 2: Lectura del CSV y carga en memoria
     auto t3 = high_resolution_clock::now();
     vector<vector<string>> table = readCSV(csvData);
@@ -50,7 +50,7 @@ int main() {
     double csvReadTime = duration_cast<duration<double>>(t4 - t3).count();
     cout << "Lectura del CSV completada en " << csvReadTime << " segundos." << endl;
     waitForEnter();
-    
+
     // Paso 3: Menú interactivo para análisis
     int option = -1;
     while (option != 0) {
@@ -64,7 +64,6 @@ int main() {
         cin >> option;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (option == 1) {
-            // Mostrar información básica
             printInfo(table);
         } else if (option == 2) {
             int nLines;
@@ -82,28 +81,27 @@ int main() {
             cout << "Opción inválida. Intente nuevamente." << endl;
         }
     }
-    
-    // Paso 4: Guardar estadísticas (describe y corr) en un archivo TXT
+
+    // Paso 4: Guardar estadísticas
     auto t5 = high_resolution_clock::now();
     string analysisFile = "data/transformacion_resultados.txt";
-    // Asegurar que exista la carpeta "data"
     struct stat st = {0};
     if (stat("data", &st) == -1) {
         mkdir("data", 0755);
     }
     saveAnalysisToTxt(table, analysisFile);
     auto t6 = high_resolution_clock::now();
-    double analysisTime = duration_cast<duration<double>>(t6 - t5).count();
-    cout << "Estadísticas guardadas en " << analysisFile << " en " << analysisTime << " segundos." << endl;
+    cout << "Estadísticas guardadas en " << analysisFile 
+         << " en " << duration_cast<duration<double>>(t6 - t5).count() << " segundos." << endl;
     waitForEnter();
-    
+
     // Paso 5: Convertir a estructuras y guardar en binario
     auto t7 = high_resolution_clock::now();
     vector<Student> students = convertTableToStudents(table);
     auto t8 = high_resolution_clock::now();
-    double conversionTime = duration_cast<duration<double>>(t8 - t7).count();
-    cout << "Conversión a estructuras completada en " << conversionTime << " segundos." << endl;
-    
+    cout << "Conversión a estructuras completada en " 
+         << duration_cast<duration<double>>(t8 - t7).count() << " segundos." << endl;
+
     auto t9 = high_resolution_clock::now();
     string binFile = "data/Admission_Predict_new.bin";
     if (writeStudentsBinary(students, binFile))
@@ -111,11 +109,11 @@ int main() {
     else
         cerr << "Error al guardar el archivo binario." << endl;
     auto t10 = high_resolution_clock::now();
-    double binWriteTime = duration_cast<duration<double>>(t10 - t9).count();
-    cout << "Escritura del archivo binario completada en " << binWriteTime << " segundos." << endl;
+    cout << "Escritura del archivo binario completada en " 
+         << duration_cast<duration<double>>(t10 - t9).count() << " segundos." << endl;
     waitForEnter();
-    
-    // Paso 6: Leer el binario y mostrar head y tail
+
+    // Paso 6: Leer binario y mostrar head/tail
     auto t11 = high_resolution_clock::now();
     vector<Student> studentsRead;
     if (readStudentsBinary(binFile, studentsRead))
@@ -123,10 +121,16 @@ int main() {
     else
         cerr << "Error al leer el archivo binario." << endl;
     auto t12 = high_resolution_clock::now();
-    double binReadTime = duration_cast<duration<double>>(t12 - t11).count();
-    cout << "Lectura del archivo binario completada en " << binReadTime << " segundos." << endl;
+    cout << "Lectura del archivo binario completada en " 
+         << duration_cast<duration<double>>(t12 - t11).count() << " segundos." << endl;
     waitForEnter();
-    
+
+    // Paso 7: Mostrar número de registros leídos
+    cout << "Número de registros (estudiantes) en el binario: " << studentsRead.size() << endl;
+
+    // Paso 8: Mostrar el tamaño de la estructura
+    printStructSize();
+
     cout << "==== Proceso ETL Finalizado ====" << endl;
     return 0;
 }

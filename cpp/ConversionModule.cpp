@@ -9,21 +9,27 @@ double toDouble(const std::string& s) { return std::stod(s); }
 
 std::vector<Student> convertTableToStudents(const std::vector<std::vector<std::string>>& table) {
     std::vector<Student> students;
-    for (size_t i = 1; i < table.size(); i++) { // omitir header
-        if (table[i].size() < 9) continue;
+    // Empezamos desde 1 para omitir el header
+    for (size_t i = 1; i < table.size(); i++) {
+        std::vector<std::string> row = table[i];
+        // Si la fila tiene menos de 9 columnas, se rellena con "0"
+        while (row.size() < 9) {
+            row.push_back("0");
+        }
         Student s;
         try {
-            s.serialNo = toInt(table[i][0]);
-            s.greScore = toInt(table[i][1]);
-            s.toeflScore = toInt(table[i][2]);
-            s.universityRating = toInt(table[i][3]);
-            s.sop = toDouble(table[i][4]);
-            s.lor = toDouble(table[i][5]);
-            s.cgpa = toDouble(table[i][6]);
-            s.research = toInt(table[i][7]);
-            s.chanceOfAdmit = toDouble(table[i][8]);
+            s.serialNo = toInt(row[0]);
+            s.greScore = toInt(row[1]);
+            s.toeflScore = toInt(row[2]);
+            s.universityRating = toInt(row[3]);
+            s.sop = toDouble(row[4]);
+            s.lor = toDouble(row[5]);
+            s.cgpa = toDouble(row[6]);
+            s.research = toInt(row[7]);
+            s.chanceOfAdmit = toDouble(row[8]);
             students.push_back(s);
         } catch (...) {
+            std::cerr << "Error en la conversión de la fila " << i << std::endl;
             continue;
         }
     }
@@ -91,4 +97,20 @@ void printBinaryHeadTail(const std::vector<Student>& students, size_t headCount,
                   << ", Chance: " << students[i].chanceOfAdmit
                   << std::endl;
     }
+}
+
+void printBinaryInfo_New(const std::string& filename) {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in) {
+        std::cerr << "No se pudo abrir " << filename << " para lectura." << std::endl;
+        return;
+    }
+    size_t count = 0;
+    in.read(reinterpret_cast<char*>(&count), sizeof(count));
+    std::cout << "Número de registros (estudiantes) en el binario: " << count << std::endl;
+    in.close();
+}
+
+void printStructSize() {
+    std::cout << "Tamaño real de struct Student: " << sizeof(Student) << " bytes" << std::endl;
 }
